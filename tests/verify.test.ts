@@ -3,15 +3,15 @@ import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { verify } from "../src/verify.ts";
 
-const TMP = join(import.meta.dir, "..", "dist", "test_tmp");
+const TEMP_DIR = join(import.meta.dir, "..", "dist", "test_tmp");
 
 afterEach(() => {
-  rmSync(TMP, { recursive: true, force: true });
+  rmSync(TEMP_DIR, { recursive: true, force: true });
 });
 
 async function writeTemp(name: string, content: string): Promise<string> {
-  mkdirSync(TMP, { recursive: true });
-  const path = join(TMP, name);
+  mkdirSync(TEMP_DIR, { recursive: true });
+  const path = join(TEMP_DIR, name);
   await Bun.write(path, content);
   return path;
 }

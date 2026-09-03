@@ -2,6 +2,7 @@ import { EventEmitter } from "node:events";
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { download } from "./src/download.ts";
+import { extractZip } from "./src/extract.ts";
 import {
   findPortableZip,
   getLatestRelease,
@@ -35,3 +36,9 @@ console.log("Verifying checksum...");
 const expectedHash = asset.digest.replace(/^sha256:/, "");
 await verify(zipPath, expectedHash);
 console.log(`Verified ${asset.name}`);
+
+console.log(`Unzipping ${asset.name}...`);
+await extractZip(zipPath, CACHE_DIR);
+
+console.log(`Deleting ${asset.name}...`);
+await Bun.file(zipPath).delete();
