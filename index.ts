@@ -11,11 +11,13 @@ import {
 import { renderProgressBar } from "./src/progress.ts";
 import { withSpinner } from "./src/spinner.ts";
 import { verify } from "./src/verify.ts";
+import { getLocalVersion, isUpToDate } from "./src/version.ts";
 
 const REPOSITORY = "ungoogled-software/ungoogled-chromium-windows";
 const CACHE_DIR = Bun.isStandaloneExecutable
   ? join(dirname(process.execPath), "bin")
   : join(import.meta.dir, "dist", "bin");
+const EXE_PATH = join(CACHE_DIR, "chrome.exe");
 
 mkdirSync(CACHE_DIR, { recursive: true });
 
@@ -25,6 +27,15 @@ const release = await withSpinner(
 );
 const asset = findPortableZip(release, getWindowsArch());
 const zipPath = join(CACHE_DIR, asset.name);
+
+const localVersion = await getLocalVersion(EXE_PATH);
+if (isUpToDate(localVersion, release.tag_name)) {
+  console.log(`Chrome is up to date (${release.tag_name}).`);
+} else {
+  console.log(
+    `Chrome is out of date (have ${localVersion ?? "none"}, latest ${release.tag_name}).`,
+  );
+}
 
 const emitter = new EventEmitter();
 emitter.on("progress", (downloaded: number, total: number) => {
