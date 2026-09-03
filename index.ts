@@ -8,6 +8,7 @@ import {
   getLatestRelease,
   getWindowsArch,
 } from "./src/github.ts";
+import { waitForKeyPress } from "./src/pause.ts";
 import { renderProgressBar } from "./src/progress.ts";
 import { withSpinner } from "./src/spinner.ts";
 import { verify } from "./src/verify.ts";
@@ -57,3 +58,8 @@ await withSpinner(`Unzipping ${asset.name}...`, () =>
 
 console.log(`Deleting ${asset.name}...`);
 await Bun.file(zipPath).delete();
+
+if (Bun.isStandaloneExecutable) {
+  process.stdout.write("Press any key to continue . . . ");
+  await waitForKeyPress();
+}
