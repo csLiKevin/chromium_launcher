@@ -9,6 +9,7 @@ import {
   getWindowsArch,
 } from "./src/github.ts";
 import { renderProgressBar } from "./src/progress.ts";
+import { withSpinner } from "./src/spinner.ts";
 import { verify } from "./src/verify.ts";
 
 const REPOSITORY = "ungoogled-software/ungoogled-chromium-windows";
@@ -18,8 +19,10 @@ const CACHE_DIR = Bun.isStandaloneExecutable
 
 mkdirSync(CACHE_DIR, { recursive: true });
 
-console.log("Checking for latest Chromium release...");
-const release = await getLatestRelease(REPOSITORY);
+const release = await withSpinner(
+  "Checking for latest Chromium release...",
+  () => getLatestRelease(REPOSITORY),
+);
 const asset = findPortableZip(release, getWindowsArch());
 const zipPath = join(CACHE_DIR, asset.name);
 
@@ -37,8 +40,9 @@ const expectedHash = asset.digest.replace(/^sha256:/, "");
 await verify(zipPath, expectedHash);
 console.log(`Verified ${asset.name}`);
 
-console.log(`Unzipping ${asset.name}...`);
-await extractZip(zipPath, CACHE_DIR);
+await withSpinner(`Unzipping ${asset.name}...`, () =>
+  extractZip(zipPath, CACHE_DIR),
+);
 
 console.log(`Deleting ${asset.name}...`);
 await Bun.file(zipPath).delete();
