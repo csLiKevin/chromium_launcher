@@ -5,6 +5,15 @@ import { unzip } from "fflate";
 
 const unzipAsync = promisify(unzip);
 
+// ungoogled-chromium's release zips wrap all their contents in a single
+// version-named folder; strip it so the payload lands directly in destinationDir.
+export function stripLeadingDirectory(entryName: string): string {
+  const separatorIndex = entryName.indexOf("/");
+  return separatorIndex === -1
+    ? entryName
+    : entryName.slice(separatorIndex + 1);
+}
+
 export async function extractZip(
   zipPath: string,
   destinationDir: string,
@@ -15,7 +24,7 @@ export async function extractZip(
   const writes = Object.entries(files)
     .filter(([name]) => !name.endsWith("/"))
     .map(([name, fileData]) => {
-      const outPath = join(destinationDir, name);
+      const outPath = join(destinationDir, stripLeadingDirectory(name));
       mkdirSync(dirname(outPath), { recursive: true });
       return Bun.write(outPath, fileData);
     });
