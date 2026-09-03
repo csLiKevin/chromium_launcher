@@ -1,7 +1,7 @@
-import { describe, it, expect, afterEach } from "bun:test";
-import { verify } from "../src/verify.ts";
-import { join } from "node:path";
+import { afterEach, describe, expect, it } from "bun:test";
 import { mkdirSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { verify } from "../src/verify.ts";
 
 const TMP = join(import.meta.dir, "..", "dist", "test_tmp");
 

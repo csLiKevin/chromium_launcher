@@ -1,5 +1,9 @@
-import { describe, it, expect } from "bun:test";
-import { findPortableZip, getWindowsArch, type GithubRelease } from "../src/github.ts";
+import { describe, expect, it } from "bun:test";
+import {
+  findPortableZip,
+  type GithubRelease,
+  getWindowsArch,
+} from "../src/github.ts";
 
 const mockRelease: GithubRelease = {
   tag_name: "128.0.6613.138-1.1",
@@ -30,7 +34,7 @@ describe("findPortableZip", () => {
 
   it("throws when no matching asset exists", () => {
     expect(() => findPortableZip(mockRelease, "x86")).toThrow(
-      /No ".*" asset found in release/
+      /No ".*" asset found in release/,
     );
   });
 });

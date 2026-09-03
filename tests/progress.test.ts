@@ -1,11 +1,13 @@
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { formatBytes, renderProgressBar } from "../src/progress.ts";
 
 describe("formatBytes", () => {
   it("formats bytes", () => expect(formatBytes(512)).toBe("512 B"));
   it("formats kilobytes", () => expect(formatBytes(1536)).toBe("1.5 KB"));
-  it("formats megabytes", () => expect(formatBytes(1024 * 1024 * 2.5)).toBe("2.5 MB"));
-  it("formats gigabytes", () => expect(formatBytes(1024 ** 3 * 1.2)).toBe("1.2 GB"));
+  it("formats megabytes", () =>
+    expect(formatBytes(1024 * 1024 * 2.5)).toBe("2.5 MB"));
+  it("formats gigabytes", () =>
+    expect(formatBytes(1024 ** 3 * 1.2)).toBe("1.2 GB"));
 });
 
 describe("renderProgressBar", () => {

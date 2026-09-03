@@ -1,10 +1,14 @@
+import { EventEmitter } from "node:events";
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { EventEmitter } from "node:events";
-import { getLatestRelease, findPortableZip, getWindowsArch } from "./src/github.ts";
 import { download } from "./src/download.ts";
-import { verify } from "./src/verify.ts";
+import {
+  findPortableZip,
+  getLatestRelease,
+  getWindowsArch,
+} from "./src/github.ts";
 import { renderProgressBar } from "./src/progress.ts";
+import { verify } from "./src/verify.ts";
 
 const REPOSITORY = "ungoogled-software/ungoogled-chromium-windows";
 const CACHE_DIR = Bun.isStandaloneExecutable

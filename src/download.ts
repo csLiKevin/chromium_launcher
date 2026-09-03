@@ -5,10 +5,16 @@ export interface DownloadProgress {
   total: number;
 }
 
-export async function download(url: string, destinationPath: string, emitter?: EventEmitter): Promise<void> {
+export async function download(
+  url: string,
+  destinationPath: string,
+  emitter?: EventEmitter,
+): Promise<void> {
   const response = await fetch(url);
   if (!response.ok || !response.body) {
-    throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Download failed: ${response.status} ${response.statusText}`,
+    );
   }
 
   const total = Number(response.headers.get("content-length") ?? 0);
