@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { mkdirSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { download } from "./src/download.ts";
 import { extractZip } from "./src/extract.ts";
@@ -19,7 +19,7 @@ const CACHE_DIR = Bun.isStandaloneExecutable
   ? join(dirname(process.execPath), "bin")
   : join(import.meta.dir, "dist", "bin");
 
-mkdirSync(CACHE_DIR, { recursive: true });
+await mkdir(CACHE_DIR, { recursive: true });
 
 const release = await withSpinner(
   "Checking for latest Chromium release...",
@@ -28,7 +28,7 @@ const release = await withSpinner(
 const asset = findPortableZip(release, getWindowsArch());
 const zipPath = join(CACHE_DIR, asset.name);
 
-const localVersion = getLocalVersion(CACHE_DIR);
+const localVersion = await getLocalVersion(CACHE_DIR);
 if (isUpToDate(localVersion, release.tag_name)) {
   console.log(`Chrome is up to date (${release.tag_name}).`);
 } else {

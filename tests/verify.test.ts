@@ -1,16 +1,16 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdirSync, rmSync } from "node:fs";
+import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { verify } from "../src/verify.ts";
 
 const TEMP_DIR = join(import.meta.dir, "..", "dist", "test_tmp");
 
-afterEach(() => {
-  rmSync(TEMP_DIR, { recursive: true, force: true });
+afterEach(async () => {
+  await rm(TEMP_DIR, { recursive: true, force: true });
 });
 
 async function writeTemp(name: string, content: string): Promise<string> {
-  mkdirSync(TEMP_DIR, { recursive: true });
+  await mkdir(TEMP_DIR, { recursive: true });
   const path = join(TEMP_DIR, name);
   await Bun.write(path, content);
   return path;

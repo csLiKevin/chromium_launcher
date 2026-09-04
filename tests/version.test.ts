@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import {
   extractBaseVersion,
@@ -9,8 +9,8 @@ import {
 
 const TEMP_DIR = join(import.meta.dir, "..", "dist", "test_tmp");
 
-afterEach(() => {
-  rmSync(TEMP_DIR, { recursive: true, force: true });
+afterEach(async () => {
+  await rm(TEMP_DIR, { recursive: true, force: true });
 });
 
 describe("extractBaseVersion", () => {
@@ -38,20 +38,20 @@ describe("isUpToDate", () => {
 });
 
 describe("getLocalVersion", () => {
-  it("returns null when the cache directory does not exist", () => {
+  it("returns null when the cache directory does not exist", async () => {
     const missingDir = join(TEMP_DIR, "does_not_exist");
-    expect(getLocalVersion(missingDir)).toBeNull();
+    expect(await getLocalVersion(missingDir)).toBeNull();
   });
 
-  it("returns null when no manifest file is present", () => {
-    mkdirSync(TEMP_DIR, { recursive: true });
-    expect(getLocalVersion(TEMP_DIR)).toBeNull();
+  it("returns null when no manifest file is present", async () => {
+    await mkdir(TEMP_DIR, { recursive: true });
+    expect(await getLocalVersion(TEMP_DIR)).toBeNull();
   });
 
-  it("reads the version from the manifest file's name", () => {
-    mkdirSync(TEMP_DIR, { recursive: true });
-    writeFileSync(join(TEMP_DIR, "128.0.6613.138.manifest"), "");
+  it("reads the version from the manifest file's name", async () => {
+    await mkdir(TEMP_DIR, { recursive: true });
+    await Bun.write(join(TEMP_DIR, "128.0.6613.138.manifest"), "");
 
-    expect(getLocalVersion(TEMP_DIR)).toBe("128.0.6613.138");
+    expect(await getLocalVersion(TEMP_DIR)).toBe("128.0.6613.138");
   });
 });

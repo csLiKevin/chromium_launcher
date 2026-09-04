@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 import { unzip } from "fflate";
@@ -23,10 +23,10 @@ export async function extractZip(
 
   const writes = Object.entries(files)
     .filter(([name]) => !name.endsWith("/"))
-    .map(([name, fileData]) => {
+    .map(async ([name, fileData]) => {
       const outPath = join(destinationDir, stripLeadingDirectory(name));
-      mkdirSync(dirname(outPath), { recursive: true });
-      return Bun.write(outPath, fileData);
+      await mkdir(dirname(outPath), { recursive: true });
+      await Bun.write(outPath, fileData);
     });
 
   await Promise.all(writes);

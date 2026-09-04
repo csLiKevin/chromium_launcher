@@ -1,20 +1,20 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdirSync, rmSync } from "node:fs";
+import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { zipSync } from "fflate";
 import { extractZip, stripLeadingDirectory } from "../src/extract.ts";
 
 const TEMP_DIR = join(import.meta.dir, "..", "dist", "test_tmp");
 
-afterEach(() => {
-  rmSync(TEMP_DIR, { recursive: true, force: true });
+afterEach(async () => {
+  await rm(TEMP_DIR, { recursive: true, force: true });
 });
 
 async function writeZip(
   name: string,
   files: Record<string, string>,
 ): Promise<string> {
-  mkdirSync(TEMP_DIR, { recursive: true });
+  await mkdir(TEMP_DIR, { recursive: true });
   const entries: Record<string, Uint8Array> = {};
   for (const [entryName, content] of Object.entries(files)) {
     entries[entryName] = new TextEncoder().encode(content);
