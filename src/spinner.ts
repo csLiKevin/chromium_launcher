@@ -9,10 +9,13 @@ export async function withSpinner<T>(
   task: () => Promise<T>,
 ): Promise<T> {
   let frameIndex = 0;
-  const interval = setInterval(() => {
+  const draw = () => {
     process.stdout.write(`\r${renderSpinnerFrame(frameIndex)} ${message}`);
     frameIndex++;
-  }, 80);
+  };
+
+  draw();
+  const interval = setInterval(draw, 80);
 
   try {
     return await task();
