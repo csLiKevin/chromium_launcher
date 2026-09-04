@@ -14,11 +14,11 @@ export function isUpToDate(
 // The extracted build includes a "<version>.manifest" file; its name encodes
 // the version, so it can be read directly without executing chrome.exe.
 export async function getLocalVersion(
-  cacheDir: string,
+  chromiumDir: string,
 ): Promise<string | null> {
   let entries: string[];
   try {
-    entries = await readdir(cacheDir);
+    entries = await readdir(chromiumDir);
   } catch {
     return null;
   }

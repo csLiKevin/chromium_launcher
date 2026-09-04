@@ -4,11 +4,16 @@ export interface Settings {
   // Days between update checks: -1 forces a check every run, 0 disables checking.
   chromiumCheckPeriod: number;
   lastUpdateCheck: string | null;
+  // Relative (to the launcher directory) or full path; env vars like %LOCALAPPDATA% are supported.
+  chromiumDirectory: string;
+  userDataDirectory: string;
 }
 
 const DEFAULT_SETTINGS: Settings = {
   chromiumCheckPeriod: 1,
   lastUpdateCheck: null,
+  chromiumDirectory: String.raw`.\bin`,
+  userDataDirectory: String.raw`..\profile`,
 };
 
 export async function readSettings(settingsPath: string): Promise<Settings> {

@@ -8,6 +8,7 @@ import {
   getLatestRelease,
   getWindowsArch,
 } from "./src/github.ts";
+import { resolveSettingsPath } from "./src/paths.ts";
 import { waitForKeyPress } from "./src/pause.ts";
 import { renderProgressBar } from "./src/progress.ts";
 import {
@@ -20,15 +21,25 @@ import { verify } from "./src/verify.ts";
 import { getLocalVersion, isUpToDate } from "./src/version.ts";
 
 const REPOSITORY = "ungoogled-software/ungoogled-chromium-windows";
-const CACHE_DIR = Bun.isStandaloneExecutable
-  ? join(dirname(process.execPath), "bin")
-  : join(import.meta.dir, "dist", "bin");
+const LAUNCHER_DIR = Bun.isStandaloneExecutable
+  ? dirname(process.execPath)
+  : join(import.meta.dir, "dist");
 
-const SETTINGS_PATH = join(CACHE_DIR, "settings.json");
-
-await mkdir(CACHE_DIR, { recursive: true });
+const SETTINGS_PATH = join(LAUNCHER_DIR, "settings.json");
 
 const settings = await readSettings(SETTINGS_PATH);
+
+const CHROMIUM_DIR = resolveSettingsPath(
+  settings.chromiumDirectory,
+  LAUNCHER_DIR,
+);
+const USER_DATA_DIR = resolveSettingsPath(
+  settings.userDataDirectory,
+  LAUNCHER_DIR,
+);
+
+await mkdir(CHROMIUM_DIR, { recursive: true });
+await mkdir(USER_DATA_DIR, { recursive: true });
 const skipReason = getUpdateCheckSkipReason(
   settings.lastUpdateCheck,
   settings.chromiumCheckPeriod,
@@ -46,9 +57,9 @@ if (skipReason) {
     lastUpdateCheck: new Date().toISOString(),
   });
   const asset = findPortableZip(release, getWindowsArch());
-  const zipPath = join(CACHE_DIR, asset.name);
+  const zipPath = join(CHROMIUM_DIR, asset.name);
 
-  const localVersion = await getLocalVersion(CACHE_DIR);
+  const localVersion = await getLocalVersion(CHROMIUM_DIR);
   if (isUpToDate(localVersion, release.tag_name)) {
     console.log(`Chrome is up to date (${release.tag_name}).`);
   } else {
@@ -72,7 +83,7 @@ if (skipReason) {
   console.log(`Verified ${asset.name}`);
 
   await withSpinner(`Unzipping ${asset.name}...`, () =>
-    extractZip(zipPath, CACHE_DIR),
+    extractZip(zipPath, CHROMIUM_DIR),
   );
   console.log(`Unzipped ${asset.name}`);
 

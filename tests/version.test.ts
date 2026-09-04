@@ -38,7 +38,7 @@ describe("isUpToDate", () => {
 });
 
 describe("getLocalVersion", () => {
-  it("returns null when the cache directory does not exist", async () => {
+  it("returns null when the chromium directory does not exist", async () => {
     const missingDir = join(TEMP_DIR, "does_not_exist");
     expect(await getLocalVersion(missingDir)).toBeNull();
   });

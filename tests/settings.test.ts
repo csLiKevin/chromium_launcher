@@ -13,13 +13,17 @@ afterEach(async () => {
   await rm(TEMP_DIR, { recursive: true, force: true });
 });
 
+const DEFAULT_SETTINGS = {
+  chromiumCheckPeriod: 1,
+  lastUpdateCheck: null,
+  chromiumDirectory: String.raw`.\bin`,
+  userDataDirectory: String.raw`..\profile`,
+};
+
 describe("readSettings", () => {
   it("returns default settings when the file does not exist", async () => {
     const settingsPath = join(TEMP_DIR, "settings.json");
-    expect(await readSettings(settingsPath)).toEqual({
-      chromiumCheckPeriod: 1,
-      lastUpdateCheck: null,
-    });
+    expect(await readSettings(settingsPath)).toEqual(DEFAULT_SETTINGS);
   });
 
   it("returns default settings when the file is not valid JSON", async () => {
@@ -27,25 +31,21 @@ describe("readSettings", () => {
     const settingsPath = join(TEMP_DIR, "settings.json");
     await Bun.write(settingsPath, "not json");
 
-    expect(await readSettings(settingsPath)).toEqual({
-      chromiumCheckPeriod: 1,
-      lastUpdateCheck: null,
-    });
+    expect(await readSettings(settingsPath)).toEqual(DEFAULT_SETTINGS);
   });
 
   it("reads back previously written settings", async () => {
     await mkdir(TEMP_DIR, { recursive: true });
     const settingsPath = join(TEMP_DIR, "settings.json");
 
-    await writeSettings(settingsPath, {
+    const settings = {
+      ...DEFAULT_SETTINGS,
       chromiumCheckPeriod: 3,
       lastUpdateCheck: "2026-01-01T00:00:00.000Z",
-    });
+    };
+    await writeSettings(settingsPath, settings);
 
-    expect(await readSettings(settingsPath)).toEqual({
-      chromiumCheckPeriod: 3,
-      lastUpdateCheck: "2026-01-01T00:00:00.000Z",
-    });
+    expect(await readSettings(settingsPath)).toEqual(settings);
   });
 });
 
