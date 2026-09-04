@@ -10,6 +10,9 @@ export function launchChrome(
   const process = Bun.spawn([exePath, ...args], {
     cwd,
     stdio: ["ignore", "ignore", "ignore"],
+    // Without this, Chrome can be torn down along with the launcher's
+    // process group instead of surviving on its own (UV_PROCESS_DETACHED on Windows).
+    detached: true,
   });
   // Hand off to Chrome and exit immediately rather than keeping the launcher
   // (and its console window) open until Chrome itself closes.
