@@ -1,15 +1,24 @@
 # chromium_launcher
 
-To install dependencies:
+A Windows launcher that keeps a portable [ungoogled-chromium](https://github.com/ungoogled-software/ungoogled-chromium-windows) build up to date.
+
+Each run checks GitHub for the latest release, compares it to the version already on disk, and downloads, verifies, and extracts an update.
+
+Built with [Bun](https://bun.com).
+
+## Setup
 
 ```bash
 bun install
 ```
 
-To run:
+## Commands
 
-```bash
-bun run index.ts
-```
+| Command | What it does |
+| --- | --- |
+| `bun run start` | Run the launcher |
+| `bun run test` | Run the test suite |
+| `bun run check` | Type-check, lint, and format |
+| `bun run compile_exe` | Build `dist/chromium_launcher.exe` |
 
-This project was created using `bun init` in bun v1.3.14. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+The compiled exe stores its Chromium build in a `bin/` folder next to itself.
