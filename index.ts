@@ -81,14 +81,12 @@ async function launchIfPossible(
 ): Promise<void> {
   const canLaunch = await Bun.file(exePath).exists();
 
-  if (Bun.isStandaloneExecutable) {
-    process.stdout.write(
-      canLaunch
-        ? "Press any key to start Chromium . . . "
-        : "Press any key to exit . . . ",
-    );
-    await waitForKeyPress();
-  }
+  process.stdout.write(
+    canLaunch
+      ? "Press any key to start Chromium . . . "
+      : "Press any key to exit . . . ",
+  );
+  await waitForKeyPress();
 
   if (canLaunch) {
     launchChrome(exePath, buildChromeArgs(chromiumCommandLine), chromiumDir);
