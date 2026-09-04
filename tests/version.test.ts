@@ -1,22 +1,16 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   extractBaseVersion,
   getLocalVersion,
   isUpToDate,
-  parseVersionOutput,
 } from "../src/version.ts";
 
-describe("parseVersionOutput", () => {
-  it("extracts the version number from Chromium's --version output", () => {
-    expect(parseVersionOutput("Chromium 128.0.6613.138 \n")).toBe(
-      "128.0.6613.138",
-    );
-  });
+const TEMP_DIR = join(import.meta.dir, "..", "dist", "test_tmp");
 
-  it("returns null when no version number is present", () => {
-    expect(parseVersionOutput("command not found")).toBeNull();
-  });
+afterEach(() => {
+  rmSync(TEMP_DIR, { recursive: true, force: true });
 });
 
 describe("extractBaseVersion", () => {
@@ -44,13 +38,20 @@ describe("isUpToDate", () => {
 });
 
 describe("getLocalVersion", () => {
-  it("returns null when the executable does not exist", async () => {
-    const missingExePath = join(
-      import.meta.dir,
-      "..",
-      "dist",
-      "does_not_exist.exe",
-    );
-    expect(await getLocalVersion(missingExePath)).toBeNull();
+  it("returns null when the cache directory does not exist", () => {
+    const missingDir = join(TEMP_DIR, "does_not_exist");
+    expect(getLocalVersion(missingDir)).toBeNull();
+  });
+
+  it("returns null when no manifest file is present", () => {
+    mkdirSync(TEMP_DIR, { recursive: true });
+    expect(getLocalVersion(TEMP_DIR)).toBeNull();
+  });
+
+  it("reads the version from the manifest file's name", () => {
+    mkdirSync(TEMP_DIR, { recursive: true });
+    writeFileSync(join(TEMP_DIR, "128.0.6613.138.manifest"), "");
+
+    expect(getLocalVersion(TEMP_DIR)).toBe("128.0.6613.138");
   });
 });

@@ -18,7 +18,6 @@ const REPOSITORY = "ungoogled-software/ungoogled-chromium-windows";
 const CACHE_DIR = Bun.isStandaloneExecutable
   ? join(dirname(process.execPath), "bin")
   : join(import.meta.dir, "dist", "bin");
-const EXE_PATH = join(CACHE_DIR, "chrome.exe");
 
 mkdirSync(CACHE_DIR, { recursive: true });
 
@@ -29,7 +28,7 @@ const release = await withSpinner(
 const asset = findPortableZip(release, getWindowsArch());
 const zipPath = join(CACHE_DIR, asset.name);
 
-const localVersion = await getLocalVersion(EXE_PATH);
+const localVersion = getLocalVersion(CACHE_DIR);
 if (isUpToDate(localVersion, release.tag_name)) {
   console.log(`Chrome is up to date (${release.tag_name}).`);
 } else {
