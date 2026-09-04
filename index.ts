@@ -37,17 +37,18 @@ async function checkForUpdate(
     ...settings,
     lastUpdateCheck: new Date().toISOString(),
   });
-  const asset = findPortableZip(release, getWindowsArch());
-  const zipPath = join(chromiumDir, asset.name);
 
   const localVersion = await getLocalVersion(chromiumDir);
   if (isUpToDate(localVersion, release.tag_name)) {
     console.log(`Chrome is up to date (${release.tag_name}).`);
-  } else {
-    console.log(
-      `Chrome is out of date (have ${localVersion ?? "none"}, latest ${release.tag_name}).`,
-    );
+    return;
   }
+  console.log(
+    `Chrome is out of date (have ${localVersion ?? "none"}, latest ${release.tag_name}).`,
+  );
+
+  const asset = findPortableZip(release, getWindowsArch());
+  const zipPath = join(chromiumDir, asset.name);
 
   const emitter = new EventEmitter();
   emitter.on("progress", (downloaded: number, total: number) => {
