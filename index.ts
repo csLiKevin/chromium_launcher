@@ -8,12 +8,14 @@ import {
   getLatestRelease,
   getWindowsArch,
 } from "./src/github.ts";
+import { buildChromeArgs, launchChrome } from "./src/launch.ts";
 import { resolveSettingsPath } from "./src/paths.ts";
 import { waitForKeyPress } from "./src/pause.ts";
 import { renderProgressBar } from "./src/progress.ts";
 import {
   getUpdateCheckSkipReason,
   readSettings,
+  type Settings,
   writeSettings,
 } from "./src/settings.ts";
 import { withSpinner } from "./src/spinner.ts";
@@ -21,45 +23,24 @@ import { verify } from "./src/verify.ts";
 import { getLocalVersion, isUpToDate } from "./src/version.ts";
 
 const REPOSITORY = "ungoogled-software/ungoogled-chromium-windows";
-const LAUNCHER_DIR = Bun.isStandaloneExecutable
-  ? dirname(process.execPath)
-  : join(import.meta.dir, "dist");
 
-const SETTINGS_PATH = join(LAUNCHER_DIR, "settings.json");
-
-const settings = await readSettings(SETTINGS_PATH);
-
-const CHROMIUM_DIR = resolveSettingsPath(
-  settings.chromiumDirectory,
-  LAUNCHER_DIR,
-);
-const USER_DATA_DIR = resolveSettingsPath(
-  settings.userDataDirectory,
-  LAUNCHER_DIR,
-);
-
-await mkdir(CHROMIUM_DIR, { recursive: true });
-await mkdir(USER_DATA_DIR, { recursive: true });
-const skipReason = getUpdateCheckSkipReason(
-  settings.lastUpdateCheck,
-  settings.chromiumCheckPeriod,
-);
-
-if (skipReason) {
-  console.log(`Skipping update check (${skipReason}).`);
-} else {
+async function checkForUpdate(
+  settingsPath: string,
+  settings: Settings,
+  chromiumDir: string,
+): Promise<void> {
   const release = await withSpinner(
     "Checking for latest Chromium release...",
     () => getLatestRelease(REPOSITORY),
   );
-  await writeSettings(SETTINGS_PATH, {
+  await writeSettings(settingsPath, {
     ...settings,
     lastUpdateCheck: new Date().toISOString(),
   });
   const asset = findPortableZip(release, getWindowsArch());
-  const zipPath = join(CHROMIUM_DIR, asset.name);
+  const zipPath = join(chromiumDir, asset.name);
 
-  const localVersion = await getLocalVersion(CHROMIUM_DIR);
+  const localVersion = await getLocalVersion(chromiumDir);
   if (isUpToDate(localVersion, release.tag_name)) {
     console.log(`Chrome is up to date (${release.tag_name}).`);
   } else {
@@ -83,7 +64,7 @@ if (skipReason) {
   console.log(`Verified ${asset.name}`);
 
   await withSpinner(`Unzipping ${asset.name}...`, () =>
-    extractZip(zipPath, CHROMIUM_DIR),
+    extractZip(zipPath, chromiumDir),
   );
   console.log(`Unzipped ${asset.name}`);
 
@@ -92,7 +73,58 @@ if (skipReason) {
   console.log(`Deleted ${asset.name}`);
 }
 
-if (Bun.isStandaloneExecutable) {
-  process.stdout.write("Press any key to continue . . . ");
-  await waitForKeyPress();
+async function launchIfPossible(
+  exePath: string,
+  chromiumDir: string,
+  chromiumCommandLine: string,
+): Promise<void> {
+  const canLaunch = await Bun.file(exePath).exists();
+
+  if (Bun.isStandaloneExecutable) {
+    process.stdout.write(
+      canLaunch
+        ? "Press any key to start Chromium . . . "
+        : "Press any key to exit . . . ",
+    );
+    await waitForKeyPress();
+  }
+
+  if (canLaunch) {
+    launchChrome(exePath, buildChromeArgs(chromiumCommandLine), chromiumDir);
+  } else {
+    console.log("No local Chromium build was found.");
+  }
 }
+
+const LAUNCHER_DIR = Bun.isStandaloneExecutable
+  ? dirname(process.execPath)
+  : join(import.meta.dir, "dist");
+const SETTINGS_PATH = join(LAUNCHER_DIR, "settings.json");
+
+const settings = await readSettings(SETTINGS_PATH);
+const CHROMIUM_DIR = resolveSettingsPath(
+  settings.chromiumDirectory,
+  LAUNCHER_DIR,
+);
+const EXE_PATH = join(CHROMIUM_DIR, "chrome.exe");
+
+await mkdir(CHROMIUM_DIR, { recursive: true });
+
+const skipReason = getUpdateCheckSkipReason(
+  settings.lastUpdateCheck,
+  settings.chromiumCheckPeriod,
+);
+
+if (skipReason) {
+  console.log(`Skipping update check (${skipReason}).`);
+} else {
+  try {
+    await checkForUpdate(SETTINGS_PATH, settings, CHROMIUM_DIR);
+  } catch (error) {
+    console.error(
+      `Update check failed: ${(error as Error).message}. Launching the existing local build if available.`,
+    );
+  }
+}
+
+await launchIfPossible(EXE_PATH, CHROMIUM_DIR, settings.chromiumCommandLine);

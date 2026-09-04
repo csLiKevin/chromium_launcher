@@ -17,7 +17,7 @@ const DEFAULT_SETTINGS = {
   chromiumCheckPeriod: 1,
   lastUpdateCheck: null,
   chromiumDirectory: String.raw`.\bin`,
-  userDataDirectory: String.raw`..\profile`,
+  chromiumCommandLine: String.raw`--flag-switches-begin --user-data-dir=..\profile --no-default-browser-check --flag-switches-end`,
 };
 
 describe("readSettings", () => {

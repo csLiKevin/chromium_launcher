@@ -6,14 +6,17 @@ export interface Settings {
   lastUpdateCheck: string | null;
   // Relative (to the launcher directory) or full path; env vars like %LOCALAPPDATA% are supported.
   chromiumDirectory: string;
-  userDataDirectory: string;
+  // Chromium command line flags: https://peter.sh/experiments/chromium-command-line-switches/
+  // Relative paths (like the default --user-data-dir) resolve against chromiumDirectory,
+  // since that's the working directory Chromium is launched from.
+  chromiumCommandLine: string;
 }
 
 const DEFAULT_SETTINGS: Settings = {
   chromiumCheckPeriod: 1,
   lastUpdateCheck: null,
   chromiumDirectory: String.raw`.\bin`,
-  userDataDirectory: String.raw`..\profile`,
+  chromiumCommandLine: String.raw`--flag-switches-begin --user-data-dir=..\profile --no-default-browser-check --flag-switches-end`,
 };
 
 export async function readSettings(settingsPath: string): Promise<Settings> {
