@@ -55,6 +55,7 @@ console.log(`Verified ${asset.name}`);
 await withSpinner(`Unzipping ${asset.name}...`, () =>
   extractZip(zipPath, CACHE_DIR),
 );
+console.log(`Unzipped ${asset.name}`);
 
 console.log(`Deleting ${asset.name}...`);
 await Bun.file(zipPath).delete();
