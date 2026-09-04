@@ -7,8 +7,11 @@ export function launchChrome(
   args: string[],
   cwd: string,
 ): void {
-  Bun.spawn([exePath, ...args], {
+  const process = Bun.spawn([exePath, ...args], {
     cwd,
     stdio: ["ignore", "ignore", "ignore"],
   });
+  // Hand off to Chrome and exit immediately rather than keeping the launcher
+  // (and its console window) open until Chrome itself closes.
+  process.unref();
 }
