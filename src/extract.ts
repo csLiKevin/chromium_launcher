@@ -32,9 +32,20 @@ export async function extractZip(
   zipPath: string,
   destinationDir: string,
 ): Promise<void> {
+  // TEMPORARY diagnostic timing, to find where extraction stalls on Windows.
+  const t0 = performance.now();
   const data = await readFileInChunks(zipPath);
-  const files = await unzipAsync(data);
+  console.error(
+    `[extractZip] read done: ${(performance.now() - t0).toFixed(0)}ms`,
+  );
 
+  const t1 = performance.now();
+  const files = await unzipAsync(data);
+  console.error(
+    `[extractZip] unzip done: ${(performance.now() - t1).toFixed(0)}ms`,
+  );
+
+  const t2 = performance.now();
   const writes = Object.entries(files)
     .filter(([name]) => !name.endsWith("/"))
     .map(async ([name, fileData]) => {
@@ -44,4 +55,8 @@ export async function extractZip(
     });
 
   await Promise.all(writes);
+  console.error(
+    `[extractZip] writes done: ${(performance.now() - t2).toFixed(0)}ms`,
+  );
+  console.error(`[extractZip] total: ${(performance.now() - t0).toFixed(0)}ms`);
 }

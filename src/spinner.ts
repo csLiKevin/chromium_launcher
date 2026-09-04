@@ -9,7 +9,12 @@ export async function withSpinner<T>(
   task: () => Promise<T>,
 ): Promise<T> {
   let frameIndex = 0;
+  // TEMPORARY diagnostic timing, to find where extraction stalls on Windows.
+  const spinnerStart = performance.now();
   const draw = () => {
+    console.error(
+      `[spinner] tick ${frameIndex} at ${(performance.now() - spinnerStart).toFixed(0)}ms`,
+    );
     process.stdout.write(`\r${renderSpinnerFrame(frameIndex)} ${message}`);
     frameIndex++;
   };
