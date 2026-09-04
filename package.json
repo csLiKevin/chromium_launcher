@@ -12,7 +12,7 @@
   },
   "scripts": {
     "check": "tsc && biome check --write .",
-    "compile_exe": "bun build index.ts --compile --target=bun-windows-x64 --outfile dist/chromium_launcher.exe",
+    "compile_exe": "bun build index.ts --compile --target=bun-windows-x64 --windows-icon=static/chromium_cyan.ico --outfile dist/chromium_launcher.exe",
     "start": "bun run index.ts",
     "test": "bun test"
   },
