@@ -101,6 +101,14 @@ const LAUNCHER_DIR = Bun.isStandaloneExecutable
 const SETTINGS_PATH = join(LAUNCHER_DIR, "settings.json");
 
 const settings = await readSettings(SETTINGS_PATH);
+console.log("Settings:");
+console.log(
+  JSON.stringify(settings, null, 2)
+    .split("\n")
+    .map((line) => `  ${line}`)
+    .join("\n"),
+);
+
 const CHROMIUM_DIR = resolveSettingsPath(
   settings.chromiumDirectory,
   LAUNCHER_DIR,
